@@ -5,33 +5,65 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AeroSphere.App.ViewModels;
 
-public sealed partial class DashboardViewModel : ObservableObject
+public sealed class DashboardViewModel : ObservableObject
 {
+    private string _headerTitle = "A calm command center for the desktop";
+    private string _headerSubtitle = "Weather, recents, system context, and quick actions stay in one responsive WinUI shell that is ready for real data providers.";
+    private string _focusSummary = "Focus: tighten the shell, surface the right context, and keep everything one or two clicks away.";
+    private string _weatherSummary = "Warsaw | 71 F | Clear";
+    private string _timeSummary = string.Empty;
+    private string _statusSummary = "Starter shell ready";
+    private string _lastUpdated = string.Empty;
+
     public DashboardViewModel()
     {
+        RefreshCommand = new RelayCommand(Refresh);
         Refresh();
     }
 
-    [ObservableProperty]
-    private string headerTitle = "A calm command center for the desktop";
+    public string HeaderTitle
+    {
+        get => _headerTitle;
+        set => SetProperty(ref _headerTitle, value);
+    }
 
-    [ObservableProperty]
-    private string headerSubtitle = "Weather, recents, system context, and quick actions stay in one responsive WinUI shell that is ready for real data providers.";
+    public string HeaderSubtitle
+    {
+        get => _headerSubtitle;
+        set => SetProperty(ref _headerSubtitle, value);
+    }
 
-    [ObservableProperty]
-    private string focusSummary = "Focus: tighten the shell, surface the right context, and keep everything one or two clicks away.";
+    public string FocusSummary
+    {
+        get => _focusSummary;
+        set => SetProperty(ref _focusSummary, value);
+    }
 
-    [ObservableProperty]
-    private string weatherSummary = "Warsaw | 71 F | Clear";
+    public string WeatherSummary
+    {
+        get => _weatherSummary;
+        set => SetProperty(ref _weatherSummary, value);
+    }
 
-    [ObservableProperty]
-    private string timeSummary = string.Empty;
+    public string TimeSummary
+    {
+        get => _timeSummary;
+        set => SetProperty(ref _timeSummary, value);
+    }
 
-    [ObservableProperty]
-    private string statusSummary = "Starter shell ready";
+    public string StatusSummary
+    {
+        get => _statusSummary;
+        set => SetProperty(ref _statusSummary, value);
+    }
 
-    [ObservableProperty]
-    private string lastUpdated = string.Empty;
+    public string LastUpdated
+    {
+        get => _lastUpdated;
+        set => SetProperty(ref _lastUpdated, value);
+    }
+
+    public RelayCommand RefreshCommand { get; }
 
     public ObservableCollection<WidgetDefinition> Widgets { get; } =
     [
@@ -118,7 +150,6 @@ public sealed partial class DashboardViewModel : ObservableObject
             true),
     ];
 
-    [RelayCommand]
     private void Refresh()
     {
         var now = DateTimeOffset.Now;
