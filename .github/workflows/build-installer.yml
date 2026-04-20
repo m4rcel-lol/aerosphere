@@ -8,12 +8,15 @@ on:
 
 jobs:
   windows-installer:
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
       BUILD_CONFIGURATION: Release
+      BUILD_PLATFORM: x64
       APP_VERSION: 1.0.${{ github.run_number }}
       PUBLISH_DIR: ${{ github.workspace }}\\artifacts\\publish\\win-x64
       INSTALLER_DIR: ${{ github.workspace }}\\artifacts\\installer
+      LOG_DIR: ${{ github.workspace }}\\artifacts\\logs
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
     steps:
       - name: Checkout
@@ -31,17 +34,23 @@ jobs:
           "C:\Program Files (x86)\WiX Toolset v3.11\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
 
       - name: Restore
-        run: dotnet restore src/AeroSphere.App/AeroSphere.App.csproj
+        shell: pwsh
+        run: dotnet restore src/AeroSphere.App/AeroSphere.App.csproj -p:Platform=$env:BUILD_PLATFORM
 
       - name: Publish app
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path "$env:PUBLISH_DIR" | Out-Null
+          New-Item -ItemType Directory -Force -Path "$env:LOG_DIR" | Out-Null
           dotnet publish src/AeroSphere.App/AeroSphere.App.csproj `
             -c $env:BUILD_CONFIGURATION `
             -r win-x64 `
             --self-contained true `
+            -p:Platform=$env:BUILD_PLATFORM `
+            -p:WindowsPackageType=None `
+            -p:AppxPackage=false `
             -p:PublishSingleFile=false `
+            -bl:"$env:LOG_DIR\\publish.binlog" `
             -o "$env:PUBLISH_DIR"
 
       - name: Prepare WiX output folders
@@ -94,3 +103,11 @@ jobs:
             artifacts/installer/AeroSphere.msi
             artifacts/installer/AeroSphere-Setup.exe
           if-no-files-found: error
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aerosphere-build-logs-${{ github.run_number }}
+          path: artifacts/logs/publish.binlog
+          if-no-files-found: ignore

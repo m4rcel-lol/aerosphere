@@ -5,39 +5,74 @@
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:AeroSphere.App.Models"
     mc:Ignorable="d"
-    Title="AeroSphere"
-    Width="1400"
-    Height="900">
+    Title="AeroSphere">
 
     <Grid Background="{ThemeResource AppShellBackgroundBrush}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="68" />
+            <ColumnDefinition Width="88" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <controls:NavigationView
+        <Border
             Grid.Column="0"
-            IsBackButtonVisible="Collapsed"
-            IsPaneToggleButtonVisible="False"
-            IsSettingsVisible="False"
-            PaneDisplayMode="LeftMinimal"
-            SelectionFollowsFocus="Enabled">
-            <controls:NavigationView.MenuItems>
-                <controls:NavigationViewItem Content="Dashboard" Icon="Home" />
-                <controls:NavigationViewItem Content="Activity" Icon="Clock" />
-                <controls:NavigationViewItem Content="Files" Icon="Document" />
-                <controls:NavigationViewItem Content="Apps" Icon="AllApps" />
-                <controls:NavigationViewItem Content="System" Icon="Admin" />
-                <controls:NavigationViewItem Content="Shortcuts" Icon="Pin" />
-            </controls:NavigationView.MenuItems>
-            <controls:NavigationView.FooterMenuItems>
-                <controls:NavigationViewItem Content="Settings" Icon="Setting" />
-            </controls:NavigationView.FooterMenuItems>
-        </controls:NavigationView>
+            Background="{ThemeResource NavigationRailBackgroundBrush}"
+            BorderBrush="{ThemeResource ShellDividerBrush}"
+            BorderThickness="0,0,1,0">
+            <controls:NavigationView
+                Background="Transparent"
+                CompactPaneLength="88"
+                IsBackButtonVisible="Collapsed"
+                IsPaneOpen="True"
+                IsPaneToggleButtonVisible="False"
+                IsSettingsVisible="False"
+                OpenPaneLength="88"
+                PaneDisplayMode="LeftCompact"
+                SelectionFollowsFocus="Enabled">
+                <controls:NavigationView.PaneHeader>
+                    <StackPanel
+                        Margin="0,8,0,20"
+                        HorizontalAlignment="Center"
+                        Spacing="10">
+                        <Border
+                            Width="40"
+                            Height="40"
+                            Background="{ThemeResource AccentSurfaceBrush}"
+                            CornerRadius="20">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="18"
+                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource AccentTextBrush}"
+                                Text="A" />
+                        </Border>
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="{ThemeResource AccentTextBrush}"
+                            Opacity="0.86"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            Text="AeroSphere" />
+                    </StackPanel>
+                </controls:NavigationView.PaneHeader>
+                <controls:NavigationView.MenuItems>
+                    <controls:NavigationViewItem Content="Dashboard" Icon="Home" />
+                    <controls:NavigationViewItem Content="Activity" Icon="Clock" />
+                    <controls:NavigationViewItem Content="Files" Icon="Document" />
+                    <controls:NavigationViewItem Content="Apps" Icon="AllApps" />
+                    <controls:NavigationViewItem Content="System" Icon="Admin" />
+                    <controls:NavigationViewItem Content="Shortcuts" Icon="Pin" />
+                </controls:NavigationView.MenuItems>
+                <controls:NavigationView.FooterMenuItems>
+                    <controls:NavigationViewItem Content="Settings" Icon="Setting" />
+                </controls:NavigationView.FooterMenuItems>
+            </controls:NavigationView>
+        </Border>
 
-        <Grid Grid.Column="1" Padding="20,16,20,16" RowSpacing="16">
+        <Grid Grid.Column="1" Padding="24,20,24,24" RowSpacing="20">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
@@ -52,78 +87,187 @@
 
                 <AutoSuggestBox
                     Grid.Column="0"
-                    PlaceholderText="Search apps, files, folders, settings, commands (Ctrl+K)"
-                    MinWidth="360"
+                    MinWidth="380"
+                    PlaceholderText="Search apps, files, folders, settings, and commands (Ctrl+K)"
                     QueryIcon="Find" />
 
-                <TextBlock
+                <Border
                     Grid.Column="1"
-                    Margin="12,0,0,0"
-                    VerticalAlignment="Center"
-                    Text="☀ 71°F Clear"
-                    Style="{ThemeResource BodyStrongTextBlockStyle}" />
+                    Margin="4,0,0,0"
+                    Background="{ThemeResource StatSurfaceBrush}"
+                    CornerRadius="14"
+                    Padding="14,10">
+                    <TextBlock
+                        Foreground="{ThemeResource AccentTextBrush}"
+                        Style="{ThemeResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind ViewModel.WeatherSummary, Mode=OneWay}" />
+                </Border>
 
-                <TextBlock
+                <Border
                     Grid.Column="2"
-                    Margin="12,0,0,0"
-                    VerticalAlignment="Center"
-                    Text="Mon, Apr 20 • 9:41 AM"
-                    Style="{ThemeResource BodyTextBlockStyle}" />
+                    Background="{ThemeResource StatSurfaceBrush}"
+                    CornerRadius="14"
+                    Padding="14,10">
+                    <TextBlock
+                        Style="{ThemeResource BodyTextBlockStyle}"
+                        Text="{x:Bind ViewModel.TimeSummary, Mode=OneWay}" />
+                </Border>
 
-                <Button Grid.Column="3" Margin="12,0,0,0" Content="Refresh" />
+                <Button
+                    Grid.Column="3"
+                    Margin="8,0,0,0"
+                    Command="{x:Bind ViewModel.RefreshCommand}"
+                    Content="Refresh" />
             </Grid>
 
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <ItemsControl>
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <controls:UniformGrid Columns="3" HorizontalAlignment="Stretch" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
+            <Border Grid.Row="1" Style="{StaticResource HeroPanelStyle}">
+                <Grid ColumnSpacing="24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                    <Border Style="{StaticResource DashboardCardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Weather Hub" Style="{ThemeResource TitleTextBlockStyle}" />
-                            <TextBlock Text="Current + hourly + 7-day forecast with offline cache fallback." TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Border>
+                    <StackPanel Spacing="14">
+                        <TextBlock
+                            Foreground="{ThemeResource AccentTextBrush}"
+                            Style="{StaticResource DashboardKickerTextStyle}"
+                            Text="Personal dashboard" />
+                        <TextBlock
+                            FontSize="32"
+                            FontWeight="SemiBold"
+                            Text="{x:Bind ViewModel.HeaderTitle}"
+                            TextWrapping="WrapWholeWords" />
+                        <TextBlock
+                            Foreground="{ThemeResource CardMutedBrush}"
+                            FontSize="14"
+                            Text="{x:Bind ViewModel.HeaderSubtitle}"
+                            TextWrapping="WrapWholeWords" />
+                        <TextBlock
+                            FontSize="16"
+                            FontWeight="Medium"
+                            Text="{x:Bind ViewModel.FocusSummary, Mode=OneWay}"
+                            TextWrapping="WrapWholeWords" />
+                    </StackPanel>
 
-                    <Border Style="{StaticResource DashboardCardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Calendar / Planner" Style="{ThemeResource TitleTextBlockStyle}" />
-                            <TextBlock Text="Today focus, events, reminders, and compact month view." TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Border>
+                    <Grid Grid.Column="1" RowSpacing="12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                    <Border Style="{StaticResource DashboardCardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Smart Daily Insights" Style="{ThemeResource TitleTextBlockStyle}" />
-                            <TextBlock Text="Disk, battery, weather alerts, and useful non-spam suggestions." TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Border>
+                        <Border Style="{StaticResource DashboardStatStyle}">
+                            <StackPanel Spacing="4">
+                                <TextBlock Style="{StaticResource DashboardMetaTextStyle}" Text="Status" />
+                                <TextBlock
+                                    Style="{StaticResource DashboardValueTextStyle}"
+                                    Text="{x:Bind ViewModel.StatusSummary, Mode=OneWay}"
+                                    TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
 
-                    <Border Style="{StaticResource DashboardCardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Recent Files" Style="{ThemeResource TitleTextBlockStyle}" />
-                            <TextBlock Text="Filter by type, quick open, pin, copy path, open containing folder." TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Border>
+                        <Border Grid.Row="1" Style="{StaticResource DashboardStatStyle}">
+                            <StackPanel Spacing="4">
+                                <TextBlock Style="{StaticResource DashboardMetaTextStyle}" Text="Last refresh" />
+                                <TextBlock
+                                    Style="{StaticResource DashboardValueTextStyle}"
+                                    Text="{x:Bind ViewModel.LastUpdated, Mode=OneWay}"
+                                    TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
 
-                    <Border Style="{StaticResource DashboardCardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Recent Folders" Style="{ThemeResource TitleTextBlockStyle}" />
-                            <TextBlock Text="Best-effort folder history from supported Windows sources." TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Border>
+                        <Border Grid.Row="2" Style="{StaticResource DashboardStatStyle}">
+                            <StackPanel Spacing="4">
+                                <TextBlock Style="{StaticResource DashboardMetaTextStyle}" Text="Privacy" />
+                                <TextBlock
+                                    Style="{StaticResource DashboardValueTextStyle}"
+                                    Text="Local-first shell with clear places to add opt-in providers."
+                                    TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
 
-                    <Border Style="{StaticResource DashboardCardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Recent Apps" Style="{ThemeResource TitleTextBlockStyle}" />
-                            <TextBlock Text="Launch, pin, sort recent vs most used, transparent source quality." TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Border>
-                </ItemsControl>
-            </ScrollViewer>
+            <GridView
+                Grid.Row="2"
+                HorizontalAlignment="Stretch"
+                IsItemClickEnabled="False"
+                ItemsSource="{x:Bind ViewModel.Widgets, Mode=OneWay}"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                ScrollViewer.HorizontalScrollMode="Disabled"
+                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                ScrollViewer.VerticalScrollMode="Enabled"
+                SelectionMode="None">
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid
+                            ItemHeight="216"
+                            ItemWidth="340"
+                            Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="Margin" Value="0,0,16,16" />
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                    </Style>
+                </GridView.ItemContainerStyle>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="models:WidgetDefinition">
+                        <Border Style="{StaticResource DashboardCardStyle}">
+                            <Grid RowSpacing="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock
+                                    Style="{StaticResource DashboardKickerTextStyle}"
+                                    Text="{x:Bind Category}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    FontSize="22"
+                                    FontWeight="SemiBold"
+                                    Text="{x:Bind Title}"
+                                    TextWrapping="WrapWholeWords" />
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Foreground="{ThemeResource CardMutedBrush}"
+                                    Text="{x:Bind Summary}"
+                                    TextWrapping="WrapWholeWords" />
+
+                                <Grid Grid.Row="3" ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Style="{StaticResource DashboardMetaTextStyle}" Text="Primary" />
+                                        <TextBlock
+                                            Style="{StaticResource DashboardValueTextStyle}"
+                                            Text="{x:Bind PrimaryValue}"
+                                            TextWrapping="WrapWholeWords" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Spacing="2">
+                                        <TextBlock Style="{StaticResource DashboardMetaTextStyle}" Text="Details" />
+                                        <TextBlock
+                                            Style="{StaticResource DashboardValueTextStyle}"
+                                            Text="{x:Bind SecondaryValue}"
+                                            TextWrapping="WrapWholeWords" />
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
         </Grid>
     </Grid>
 </Window>

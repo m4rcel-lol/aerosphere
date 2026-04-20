@@ -4,12 +4,23 @@
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>AeroSphere.App</RootNamespace>
+    <AssemblyName>AeroSphere.App</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
-    <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <AppxPackage>false</AppxPackage>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Platform Condition="'$(Platform)' == '' and '$(RuntimeIdentifier)' == 'win-x86'">x86</Platform>
+    <Platform Condition="'$(Platform)' == '' and '$(RuntimeIdentifier)' == 'win-x64'">x64</Platform>
+    <Platform Condition="'$(Platform)' == '' and '$(RuntimeIdentifier)' == 'win-arm64'">ARM64</Platform>
+    <PlatformTarget Condition="'$(PlatformTarget)' == '' and '$(RuntimeIdentifier)' == 'win-x86'">x86</PlatformTarget>
+    <PlatformTarget Condition="'$(PlatformTarget)' == '' and '$(RuntimeIdentifier)' == 'win-x64'">x64</PlatformTarget>
+    <PlatformTarget Condition="'$(PlatformTarget)' == '' and '$(RuntimeIdentifier)' == 'win-arm64'">ARM64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>

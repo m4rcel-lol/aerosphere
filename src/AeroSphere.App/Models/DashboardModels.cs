@@ -10,10 +10,12 @@ public enum WidgetSize
 public sealed record WidgetDefinition(
     string Id,
     string Title,
+    string Category,
+    string Summary,
+    string PrimaryValue,
+    string SecondaryValue,
     WidgetSize Size,
-    bool IsEnabled,
-    int ColumnSpan,
-    int RowSpan);
+    bool IsEnabled);
 
 public sealed record RecentFileItem(
     string FileName,
