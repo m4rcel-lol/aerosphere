@@ -11,8 +11,7 @@
     <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" Platform="x64" />
 
     <MajorUpgrade
-      DowngradeErrorMessage="A newer version of AeroSphere is already installed."
-      AllowSameVersionUpgrades="yes" />
+      DowngradeErrorMessage="A newer version of AeroSphere is already installed." />
 
     <MediaTemplate EmbedCab="yes" />
 
@@ -26,10 +25,10 @@
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLFOLDER" Name="AeroSphere" />
       </Directory>
-      <Directory Id="ProgramMenuFolder">
+      <Directory Id="CommonProgramsFolder">
         <Directory Id="AppProgramsFolder" Name="AeroSphere" />
       </Directory>
-      <Directory Id="DesktopFolder" Name="Desktop" />
+      <Directory Id="CommonDesktopFolder" />
     </Directory>
 
     <DirectoryRef Id="AppProgramsFolder">
@@ -42,7 +41,7 @@
           WorkingDirectory="INSTALLFOLDER" />
         <RemoveFolder Id="CleanProgramMenuDir" On="uninstall" />
         <RegistryValue
-          Root="HKLM"
+          Root="HKMU"
           Key="Software\AeroSphere"
           Name="Installed"
           Type="integer"
@@ -51,7 +50,7 @@
       </Component>
     </DirectoryRef>
 
-    <DirectoryRef Id="DesktopFolder">
+    <DirectoryRef Id="CommonDesktopFolder">
       <Component Id="DesktopShortcut" Guid="764D03EE-9D15-4316-89A1-257AB1CE0949">
         <Shortcut
           Id="DesktopShortcutId"
@@ -60,7 +59,7 @@
           Target="[INSTALLFOLDER]AeroSphere.App.exe"
           WorkingDirectory="INSTALLFOLDER" />
         <RegistryValue
-          Root="HKLM"
+          Root="HKMU"
           Key="Software\AeroSphere"
           Name="DesktopShortcut"
           Type="integer"

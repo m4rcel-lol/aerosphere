@@ -89,7 +89,10 @@ jobs:
           $lightArgs = @(
             "$env:INSTALLER_DIR\\obj\\Product.wixobj",
             "$env:INSTALLER_DIR\\obj\\AppFiles.wixobj",
+            "-sh",
             "-ext", "WixUIExtension",
+            "-sice:ICE43",
+            "-sice:ICE57",
             "-cultures:en-us",
             "-out", "$env:INSTALLER_DIR\\AeroSphere.msi"
           )
