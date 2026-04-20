@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product
+    Id="*"
+    Name="AeroSphere"
+    Language="1033"
+    Version="$(var.AppVersion)"
+    Manufacturer="AeroSphere"
+    UpgradeCode="E9E3B64A-1D1F-4A09-9DBE-D910D0129DFA">
+
+    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" Platform="x64" />
+
+    <MajorUpgrade
+      DowngradeErrorMessage="A newer version of AeroSphere is already installed."
+      AllowSameVersionUpgrades="yes" />
+
+    <MediaTemplate EmbedCab="yes" />
+
+
+    <Feature Id="MainFeature" Title="AeroSphere" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="ApplicationShortcuts" />
+    </Feature>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="INSTALLFOLDER" Name="AeroSphere" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="AppProgramsFolder" Name="AeroSphere" />
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop" />
+    </Directory>
+
+    <DirectoryRef Id="AppProgramsFolder">
+      <Component Id="ApplicationShortcuts" Guid="4C3E31B0-79AE-4A07-9D8B-5F590B2FA2B0">
+        <Shortcut
+          Id="StartMenuShortcut"
+          Name="AeroSphere"
+          Description="AeroSphere Dashboard"
+          Target="[INSTALLFOLDER]AeroSphere.App.exe"
+          WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="CleanProgramMenuDir" On="uninstall" />
+        <RegistryValue
+          Root="HKLM"
+          Key="Software\AeroSphere"
+          Name="Installed"
+          Type="integer"
+          Value="1"
+          KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="DesktopShortcut" Guid="764D03EE-9D15-4316-89A1-257AB1CE0949">
+        <Shortcut
+          Id="DesktopShortcutId"
+          Name="AeroSphere"
+          Description="AeroSphere Dashboard"
+          Target="[INSTALLFOLDER]AeroSphere.App.exe"
+          WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue
+          Root="HKLM"
+          Key="Software\AeroSphere"
+          Name="DesktopShortcut"
+          Type="integer"
+          Value="1"
+          KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <Feature Id="DesktopShortcutFeature" Title="Desktop Shortcut" Level="1" Absent="allow">
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+
+  </Product>
+</Wix>

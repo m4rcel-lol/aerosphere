@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+  <Bundle
+    Name="AeroSphere Setup"
+    Version="$(var.AppVersion)"
+    Manufacturer="AeroSphere"
+    UpgradeCode="1B7E65FA-EA47-4E3D-ACED-6FCA3F6E58D4"
+    Compressed="yes"
+    DisableModify="yes">
+
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
+      <bal:WixStandardBootstrapperApplication
+        LicenseFile="installer/wix/license.rtf"
+        ShowVersion="yes"
+        Theme="hyperlinkLicense" />
+    </BootstrapperApplicationRef>
+
+    <Chain>
+      <MsiPackage
+        SourceFile="$(var.MsiPath)"
+        DisplayInternalUI="no"
+        Visible="no"
+        Vital="yes" />
+    </Chain>
+  </Bundle>
+</Wix>
