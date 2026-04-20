@@ -12,8 +12,7 @@
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
       <bal:WixStandardBootstrapperApplication
         LicenseFile="installer/wix/license.rtf"
-        ShowVersion="yes"
-        Theme="hyperlinkLicense" />
+        ShowVersion="yes" />
     </BootstrapperApplicationRef>
 
     <Chain>
