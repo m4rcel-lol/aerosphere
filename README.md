@@ -6,7 +6,7 @@ AeroSphere is a WinUI 3 desktop dashboard shell for Windows 10/11. The project f
 
 - Native WinUI 3 shell with a navigation rail, search/header bar, hero summary panel, and data-driven dashboard cards.
 - Core domain models for widgets, recent items, and weather snapshots.
-- WiX v3 installer pipeline that publishes the app, harvests output with `heat`, and emits both `AeroSphere.msi` and `AeroSphere-Setup.exe`.
+- WiX v3 installer pipeline that publishes the app, harvests output with `heat`, and emits an end-user installer plus a portable ZIP for direct launch.
 - Unpackaged, self-contained publish settings so the CI build targets the same deployment shape used by the installer.
 
 ## Project layout
@@ -56,14 +56,17 @@ The GitHub Actions workflow at [.github/workflows/build-installer.yml](/C:/aeros
 1. Restores and publishes the WinUI app for `win-x64`.
 2. Harvests the published output into WiX source with `heat`.
 3. Builds `AeroSphere.msi`.
-4. Wraps the MSI in `AeroSphere-Setup.exe`.
-5. Uploads the installer artifacts, plus a publish binlog on failure.
+4. Wraps the MSI and the VC++ redistributable in `AeroSphere-Installer.exe`.
+5. Creates `AeroSphere-portable-win-x64.zip` from the publish output.
+6. Uploads the end-user artifacts, plus a publish binlog on failure.
 
 ## Publish troubleshooting
 
-The project is configured as an unpackaged WinUI desktop app. Two details matter for reliable CI publishing:
+The project is configured as an unpackaged WinUI desktop app. A few details matter for reliable CI publishing and launch behavior:
 
 - The project file sets `WindowsPackageType=None`, `AppxPackage=false`, and `WindowsAppSDKSelfContained=true`.
+- The project explicitly disables Windows App SDK bootstrap and deployment-manager auto-initializers that are unnecessary for self-contained deployment, while leaving Undocked RegFree WinRT initialization enabled for downlevel systems.
+- The installer bundle chains the latest supported Microsoft Visual C++ Redistributable for x64 before installing the app, because unpackaged Windows App SDK desktop apps still require that runtime on target machines.
 - The workflow restores and publishes with `Platform=x64`, which helps the WinUI XAML compiler stay aligned with the `win-x64` runtime identifier.
 
 If `XamlCompiler.exe` fails again, download the `aerosphere-build-logs-*` artifact from the failed run and inspect `publish.binlog` with MSBuild Structured Log Viewer.
