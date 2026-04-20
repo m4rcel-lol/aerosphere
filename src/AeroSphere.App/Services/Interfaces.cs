@@ -2,21 +2,20 @@ using AeroSphere.App.Models;
 
 namespace AeroSphere.App.Services;
 
-public interface IWeatherService
+public interface ISystemSnapshotService
 {
-    Task<WeatherSnapshot?> GetCurrentAsync(CancellationToken cancellationToken);
+    DashboardSnapshot GetSnapshot();
 }
 
-public interface IRecentItemsService
+public interface IRecentContentService
 {
-    Task<IReadOnlyList<RecentFileItem>> GetRecentFilesAsync(CancellationToken cancellationToken);
-    Task<IReadOnlyList<RecentFolderItem>> GetRecentFoldersAsync(CancellationToken cancellationToken);
-    Task<IReadOnlyList<RecentAppItem>> GetRecentAppsAsync(CancellationToken cancellationToken);
+    IReadOnlyList<RecentFileItem> GetRecentFiles(int maxItems);
+    IReadOnlyList<RecentFolderItem> GetRecentFolders(int maxItems);
 }
 
-public interface IPrivacyService
+public interface ILauncherService
 {
-    bool HasConsentForActivityHistory();
-    bool IsPathExcluded(string path);
-    string RedactPath(string path);
+    IReadOnlyList<AppLauncher> GetLaunchers();
+    void Launch(AppLauncher launcher);
+    void OpenPath(string path);
 }

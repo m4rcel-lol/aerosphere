@@ -40,7 +40,7 @@ jobs:
 
       - name: Restore
         shell: pwsh
-        run: dotnet restore src/AeroSphere.App/AeroSphere.App.csproj -p:Platform=$env:BUILD_PLATFORM
+        run: dotnet restore src/AeroSphere.App/AeroSphere.App.csproj
 
       - name: Publish app
         shell: pwsh
@@ -52,8 +52,6 @@ jobs:
             -r win-x64 `
             --self-contained true `
             -p:Platform=$env:BUILD_PLATFORM `
-            -p:WindowsPackageType=None `
-            -p:AppxPackage=false `
             -p:PublishSingleFile=false `
             -bl:"$env:LOG_DIR\\publish.binlog" `
             -o "$env:PUBLISH_DIR"
@@ -63,14 +61,6 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path "$env:INSTALLER_DIR\\obj" | Out-Null
           New-Item -ItemType Directory -Force -Path "$env:PORTABLE_DIR" | Out-Null
-
-      - name: Download Visual C++ Redistributable
-        shell: pwsh
-        run: |
-          $vcRedistPath = "$env:INSTALLER_DIR\\vc_redist.x64.exe"
-          Invoke-WebRequest `
-            -Uri "https://aka.ms/vc14/vc_redist.x64.exe" `
-            -OutFile $vcRedistPath
 
       - name: Create portable package
         shell: pwsh
@@ -129,7 +119,6 @@ jobs:
             "-ext", "WixBalExtension",
             "-dAppVersion=$env:APP_VERSION",
             "-dMsiPath=$env:INSTALLER_DIR\\AeroSphere.msi",
-            "-dVcRedistPath=$env:INSTALLER_DIR\\vc_redist.x64.exe",
             "-out", "$env:INSTALLER_DIR\\obj\\"
           )
 
@@ -149,6 +138,7 @@ jobs:
           name: aerosphere-windows-${{ github.run_number }}
           path: |
             artifacts/installer/AeroSphere-Installer.exe
+            artifacts/installer/AeroSphere.msi
             artifacts/portable/AeroSphere-portable-win-x64.zip
           if-no-files-found: error
 

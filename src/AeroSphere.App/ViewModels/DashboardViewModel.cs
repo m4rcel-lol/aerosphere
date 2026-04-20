@@ -1,161 +1,238 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using System.Windows.Threading;
+using AeroSphere.App.Infrastructure;
 using AeroSphere.App.Models;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using AeroSphere.App.Services;
 
 namespace AeroSphere.App.ViewModels;
 
-public sealed class DashboardViewModel : ObservableObject
+public sealed class DashboardViewModel : ObservableObject, IDisposable
 {
-    private string _headerTitle = "A calm command center for the desktop";
-    private string _headerSubtitle = "Weather, recents, system context, and quick actions stay in one responsive WinUI shell that is ready for real data providers.";
-    private string _focusSummary = "Focus: tighten the shell, surface the right context, and keep everything one or two clicks away.";
-    private string _weatherSummary = "Warsaw | 71 F | Clear";
-    private string _timeSummary = string.Empty;
-    private string _statusSummary = "Starter shell ready";
-    private string _lastUpdated = string.Empty;
+    private readonly ISystemSnapshotService _systemSnapshotService;
+    private readonly IRecentContentService _recentContentService;
+    private readonly ILauncherService _launcherService;
+    private readonly DispatcherTimer _clockTimer;
+
+    private string _heroTitle = "Windows 10 style desktop dashboard";
+    private string _heroSubtitle = "A faster, flatter local dashboard that works with standard .NET deployment and a normal Windows installer.";
+    private string _currentTime = string.Empty;
+    private string _currentDate = string.Empty;
+    private string _machineName = Environment.MachineName;
+    private string _statusMessage = "Loading dashboard...";
+    private string _lastRefreshLabel = "Not refreshed yet";
 
     public DashboardViewModel()
+        : this(new SystemSnapshotService(), new RecentContentService(), new LauncherService())
     {
-        RefreshCommand = new RelayCommand(Refresh);
-        Refresh();
     }
 
-    public string HeaderTitle
+    internal DashboardViewModel(
+        ISystemSnapshotService systemSnapshotService,
+        IRecentContentService recentContentService,
+        ILauncherService launcherService)
     {
-        get => _headerTitle;
-        set => SetProperty(ref _headerTitle, value);
+        _systemSnapshotService = systemSnapshotService;
+        _recentContentService = recentContentService;
+        _launcherService = launcherService;
+
+        RefreshCommand = new RelayCommand(async _ => await RefreshAsync());
+        LaunchAppCommand = new RelayCommand(parameter => Launch(parameter as AppLauncher), parameter => parameter is AppLauncher);
+        OpenRecentFileCommand = new RelayCommand(parameter => OpenRecentFile(parameter as RecentFileItem), parameter => parameter is RecentFileItem);
+        OpenRecentFolderCommand = new RelayCommand(parameter => OpenRecentFolder(parameter as RecentFolderItem), parameter => parameter is RecentFolderItem);
+
+        _clockTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1),
+        };
+        _clockTimer.Tick += (_, _) => UpdateClock();
+        UpdateClock();
+        _clockTimer.Start();
+
+        _ = RefreshAsync();
     }
 
-    public string HeaderSubtitle
+    public string HeroTitle
     {
-        get => _headerSubtitle;
-        set => SetProperty(ref _headerSubtitle, value);
+        get => _heroTitle;
+        set => SetProperty(ref _heroTitle, value);
     }
 
-    public string FocusSummary
+    public string HeroSubtitle
     {
-        get => _focusSummary;
-        set => SetProperty(ref _focusSummary, value);
+        get => _heroSubtitle;
+        set => SetProperty(ref _heroSubtitle, value);
     }
 
-    public string WeatherSummary
+    public string CurrentTime
     {
-        get => _weatherSummary;
-        set => SetProperty(ref _weatherSummary, value);
+        get => _currentTime;
+        set => SetProperty(ref _currentTime, value);
     }
 
-    public string TimeSummary
+    public string CurrentDate
     {
-        get => _timeSummary;
-        set => SetProperty(ref _timeSummary, value);
+        get => _currentDate;
+        set => SetProperty(ref _currentDate, value);
     }
 
-    public string StatusSummary
+    public string MachineName
     {
-        get => _statusSummary;
-        set => SetProperty(ref _statusSummary, value);
+        get => _machineName;
+        set => SetProperty(ref _machineName, value);
     }
 
-    public string LastUpdated
+    public string StatusMessage
     {
-        get => _lastUpdated;
-        set => SetProperty(ref _lastUpdated, value);
+        get => _statusMessage;
+        set => SetProperty(ref _statusMessage, value);
     }
 
-    public RelayCommand RefreshCommand { get; }
-
-    public ObservableCollection<WidgetDefinition> Widgets { get; } =
-    [
-        new(
-            "weather",
-            "Weather Hub",
-            "Ambient context",
-            "Current conditions, short-range forecast, and offline cache status in one glanceable card.",
-            "71 F",
-            "7-day outlook primed",
-            WidgetSize.Large,
-            true),
-        new(
-            "planner",
-            "Calendar / Planner",
-            "Today view",
-            "Pin the next meeting, focus block, and reminders without burying the current task.",
-            "3 key events",
-            "Top priority: design review",
-            WidgetSize.Medium,
-            true),
-        new(
-            "insights",
-            "Smart Daily Insights",
-            "Signals",
-            "Highlight the few warnings or nudges that matter instead of turning the dashboard into noise.",
-            "2 new insights",
-            "Disk and weather checks ready",
-            WidgetSize.Medium,
-            true),
-        new(
-            "recent-files",
-            "Recent Files",
-            "Activity",
-            "Bring documents, code, screenshots, and downloads back with quick path and app context.",
-            "24 items indexed",
-            "Last opened 8 minutes ago",
-            WidgetSize.Large,
-            true),
-        new(
-            "recent-folders",
-            "Recent Folders",
-            "Navigation",
-            "Promote the folders that keep showing up so users can jump back without hunting in Explorer.",
-            "12 folders tracked",
-            "Pinned and filtered views planned",
-            WidgetSize.Large,
-            true),
-        new(
-            "recent-apps",
-            "Recent Apps",
-            "Launch",
-            "Show the apps that were actually used recently, not just whatever happens to be installed.",
-            "8 active apps",
-            "Sort by recency or usage",
-            WidgetSize.Large,
-            true),
-        new(
-            "system",
-            "System Overview",
-            "Health",
-            "Keep CPU, memory, battery, and network trends close enough to act before they become friction.",
-            "Idle target < 1%",
-            "Battery-aware on supported hardware",
-            WidgetSize.Large,
-            true),
-        new(
-            "favorites",
-            "Quick Access",
-            "Shortcuts",
-            "Mix apps, files, folders, and commands into one customizable launch strip for daily routines.",
-            "Work + personal",
-            "Drag reorder planned",
-            WidgetSize.Large,
-            true),
-        new(
-            "utilities",
-            "Productivity Utilities",
-            "Tools",
-            "Keep small helpers such as notes, timers, and download watchlists one tap from the shell.",
-            "Notes, timer, media",
-            "Privacy-aware by default",
-            WidgetSize.Large,
-            true),
-    ];
-
-    private void Refresh()
+    public string LastRefreshLabel
     {
-        var now = DateTimeOffset.Now;
+        get => _lastRefreshLabel;
+        set => SetProperty(ref _lastRefreshLabel, value);
+    }
 
-        TimeSummary = now.ToString("ddd, MMM d | h:mm tt");
-        LastUpdated = now.ToString("MMM d, yyyy | h:mm tt");
-        StatusSummary = "Dashboard snapshot refreshed";
+    public ObservableCollection<OverviewCard> OverviewCards { get; } = [];
+
+    public ObservableCollection<RecentFileItem> RecentFiles { get; } = [];
+
+    public ObservableCollection<RecentFolderItem> RecentFolders { get; } = [];
+
+    public ObservableCollection<AppLauncher> AppLaunchers { get; } = [];
+
+    public ObservableCollection<AppLauncher> PinnedLaunchers { get; } = [];
+
+    public ObservableCollection<SystemFact> SystemFacts { get; } = [];
+
+    public ObservableCollection<DriveSnapshot> DriveSnapshots { get; } = [];
+
+    public ObservableCollection<NetworkSnapshot> NetworkSnapshots { get; } = [];
+
+    public ICommand RefreshCommand { get; }
+
+    public ICommand LaunchAppCommand { get; }
+
+    public ICommand OpenRecentFileCommand { get; }
+
+    public ICommand OpenRecentFolderCommand { get; }
+
+    public void Dispose()
+    {
+        _clockTimer.Stop();
+    }
+
+    private async Task RefreshAsync()
+    {
+        try
+        {
+            StatusMessage = "Refreshing local data...";
+
+            var dashboardTask = Task.Run(_systemSnapshotService.GetSnapshot);
+            var recentFilesTask = Task.Run(() => _recentContentService.GetRecentFiles(14));
+            var recentFoldersTask = Task.Run(() => _recentContentService.GetRecentFolders(12));
+            var launchersTask = Task.Run(_launcherService.GetLaunchers);
+
+            await Task.WhenAll(dashboardTask, recentFilesTask, recentFoldersTask, launchersTask);
+
+            var snapshot = dashboardTask.Result;
+            HeroTitle = snapshot.HeroTitle;
+            HeroSubtitle = snapshot.HeroSubtitle;
+            MachineName = snapshot.SystemFacts.FirstOrDefault(fact => fact.Label == "Machine")?.Value ?? Environment.MachineName;
+
+            ReplaceWith(OverviewCards, snapshot.OverviewCards);
+            ReplaceWith(SystemFacts, snapshot.SystemFacts);
+            ReplaceWith(DriveSnapshots, snapshot.DriveSnapshots);
+            ReplaceWith(NetworkSnapshots, snapshot.NetworkSnapshots);
+            ReplaceWith(RecentFiles, recentFilesTask.Result);
+            ReplaceWith(RecentFolders, recentFoldersTask.Result);
+
+            var launchers = launchersTask.Result;
+            ReplaceWith(AppLaunchers, launchers);
+            ReplaceWith(PinnedLaunchers, launchers.Take(4));
+
+            LastRefreshLabel = $"Updated {DateTime.Now:MMM d, yyyy 'at' HH:mm:ss}";
+            StatusMessage = "Dashboard ready";
+        }
+        catch (Exception exception)
+        {
+            StatusMessage = $"Refresh failed: {exception.Message}";
+        }
+    }
+
+    private void UpdateClock()
+    {
+        var now = DateTime.Now;
+        CurrentTime = now.ToString("HH:mm:ss");
+        CurrentDate = now.ToString("dddd, MMMM d, yyyy");
+    }
+
+    private void Launch(AppLauncher? launcher)
+    {
+        if (launcher is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _launcherService.Launch(launcher);
+            StatusMessage = $"{launcher.Name} opened.";
+        }
+        catch (Exception exception)
+        {
+            StatusMessage = $"Could not open {launcher.Name}: {exception.Message}";
+        }
+    }
+
+    private void OpenRecentFile(RecentFileItem? item)
+    {
+        if (item is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _launcherService.OpenPath(item.LaunchPath);
+            StatusMessage = $"{item.DisplayName} opened.";
+        }
+        catch (Exception exception)
+        {
+            StatusMessage = $"Could not open {item.DisplayName}: {exception.Message}";
+        }
+    }
+
+    private void OpenRecentFolder(RecentFolderItem? item)
+    {
+        if (item is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _launcherService.OpenPath(item.FullPath);
+            StatusMessage = $"{item.DisplayName} opened.";
+        }
+        catch (Exception exception)
+        {
+            StatusMessage = $"Could not open {item.DisplayName}: {exception.Message}";
+        }
+    }
+
+    private static void ReplaceWith<T>(ObservableCollection<T> target, IEnumerable<T> items)
+    {
+        target.Clear();
+
+        foreach (var item in items)
+        {
+            target.Add(item);
+        }
     }
 }

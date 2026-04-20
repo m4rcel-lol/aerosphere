@@ -1,21 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
     <RootNamespace>AeroSphere.App</RootNamespace>
     <AssemblyName>AeroSphere.App</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <UseWinUI>true</UseWinUI>
-    <WindowsPackageType>None</WindowsPackageType>
-    <AppxPackage>false</AppxPackage>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
-    <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
-    <WindowsAppSdkUndockedRegFreeWinRTInitialize>true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
-    <EnableMsixTooling>true</EnableMsixTooling>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platform Condition="'$(Platform)' == '' and '$(RuntimeIdentifier)' == 'win-x86'">x86</Platform>
@@ -25,9 +17,4 @@
     <PlatformTarget Condition="'$(PlatformTarget)' == '' and '$(RuntimeIdentifier)' == 'win-x64'">x64</PlatformTarget>
     <PlatformTarget Condition="'$(PlatformTarget)' == '' and '$(RuntimeIdentifier)' == 'win-arm64'">ARM64</PlatformTarget>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250108002" />
-  </ItemGroup>
 </Project>

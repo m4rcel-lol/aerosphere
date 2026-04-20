@@ -1,13 +1,13 @@
 # AeroSphere
 
-AeroSphere is a WinUI 3 desktop dashboard shell for Windows 10/11. The project focuses on a clean command-center layout for weather, recent activity, quick actions, and system context, with WiX-based installer output in CI.
+AeroSphere is a .NET 8 WPF desktop dashboard with a Windows 10-style interface, local machine widgets, and a WiX-based installer pipeline.
 
 ## Current state
 
-- Native WinUI 3 shell with a navigation rail, search/header bar, hero summary panel, and data-driven dashboard cards.
-- Core domain models for widgets, recent items, and weather snapshots.
-- WiX v3 installer pipeline that publishes the app, harvests output with `heat`, and emits an end-user installer plus a portable ZIP for direct launch.
-- Unpackaged, self-contained publish settings so the CI build targets the same deployment shape used by the installer.
+- Pure .NET 8 WPF application with a flat Windows 10-style shell.
+- Working local-data components for time, system status, network adapters, drives, recent files, recent folders, and quick-launch actions.
+- WiX v3 installer pipeline that publishes the app, harvests output with `heat`, and emits an MSI, a wrapped installer EXE, and a portable ZIP.
+- Self-contained publish settings so the installed Start Menu shortcut launches the same output produced in CI.
 
 ## Project layout
 
@@ -15,11 +15,12 @@ AeroSphere is a WinUI 3 desktop dashboard shell for Windows 10/11. The project f
 src/
   AeroSphere.App/
     App.xaml
-    MainWindow.xaml
+    Infrastructure/
     Models/
     Services/
     Theming/
     ViewModels/
+    MainWindow.xaml
 installer/
   wix/
 .github/
@@ -32,7 +33,7 @@ Prerequisites:
 
 - Windows 10 version 19044 or newer, or Windows 11
 - .NET 8 SDK
-- Visual Studio 2022 17.8+ with the WinUI / Windows App SDK desktop tooling
+- Visual Studio 2022 17.8+ with desktop .NET tooling
 
 Commands:
 
@@ -43,8 +44,6 @@ dotnet publish src/AeroSphere.App/AeroSphere.App.csproj `
   -r win-x64 `
   --self-contained true `
   -p:Platform=x64 `
-  -p:WindowsPackageType=None `
-  -p:AppxPackage=false `
   -p:PublishSingleFile=false `
   -o artifacts/publish/win-x64
 ```
@@ -53,20 +52,19 @@ dotnet publish src/AeroSphere.App/AeroSphere.App.csproj `
 
 The GitHub Actions workflow at [.github/workflows/build-installer.yml](/C:/aerosphere-main/.github/workflows/build-installer.yml) performs these steps:
 
-1. Restores and publishes the WinUI app for `win-x64`.
+1. Restores and publishes the WPF app for `win-x64`.
 2. Harvests the published output into WiX source with `heat`.
 3. Builds `AeroSphere.msi`.
-4. Wraps the MSI and the VC++ redistributable in `AeroSphere-Installer.exe`.
+4. Wraps the MSI in `AeroSphere-Installer.exe`.
 5. Creates `AeroSphere-portable-win-x64.zip` from the publish output.
-6. Uploads the end-user artifacts, plus a publish binlog on failure.
+6. Uploads the installer and portable artifacts, plus a publish binlog on failure.
 
 ## Publish troubleshooting
 
-The project is configured as an unpackaged WinUI desktop app. A few details matter for reliable CI publishing and launch behavior:
+The project is configured as a self-contained WPF desktop app. A few details matter for reliable CI publishing and launch behavior:
 
-- The project file sets `WindowsPackageType=None`, `AppxPackage=false`, and `WindowsAppSDKSelfContained=true`.
-- The project explicitly disables Windows App SDK bootstrap and deployment-manager auto-initializers that are unnecessary for self-contained deployment, while leaving Undocked RegFree WinRT initialization enabled for downlevel systems.
-- The installer bundle chains the latest supported Microsoft Visual C++ Redistributable for x64 before installing the app, because unpackaged Windows App SDK desktop apps still require that runtime on target machines.
-- The workflow restores and publishes with `Platform=x64`, which helps the WinUI XAML compiler stay aligned with the `win-x64` runtime identifier.
+- The app is published self-contained for `win-x64`, so the installed Start Menu shortcut launches without requiring a separate desktop runtime install.
+- The MSI creates a Start Menu shortcut for `AeroSphere.App.exe` inside the installed application folder.
+- The workflow restores and publishes with `Platform=x64`, which keeps the installer output aligned with the target architecture.
 
-If `XamlCompiler.exe` fails again, download the `aerosphere-build-logs-*` artifact from the failed run and inspect `publish.binlog` with MSBuild Structured Log Viewer.
+If a publish step fails again, download the `aerosphere-build-logs-*` artifact from the failed run and inspect `publish.binlog` with MSBuild Structured Log Viewer.
