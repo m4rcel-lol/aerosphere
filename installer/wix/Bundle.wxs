@@ -18,9 +18,9 @@
     <Chain>
       <ExePackage
         Id="VCRedistX64"
-        Bundle="yes"
         PerMachine="yes"
         Permanent="yes"
+        Protocol="burn"
         Vital="yes"
         SourceFile="$(var.VcRedistPath)"
         InstallCommand="/install /quiet /norestart"
